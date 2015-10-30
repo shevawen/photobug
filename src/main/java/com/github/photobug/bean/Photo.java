@@ -66,6 +66,10 @@ public class Photo extends BasePojo {
 
 	@Column
 	private long views;
+	
+	private int width;
+	
+	private int height;
 
 	public int getId() {
 		return id;
@@ -201,6 +205,22 @@ public class Photo extends BasePojo {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
 	}
 
 }

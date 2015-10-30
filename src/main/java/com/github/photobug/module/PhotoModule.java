@@ -40,6 +40,10 @@ public class PhotoModule extends BaseModule {
 	static String MEDIA_PATH = "/uploadfiles";
 
 	@At
+	@Ok("jsp:jsp.photo.view")
+	public void view() {
+	}
+	@At
 	@Ok("jsp:jsp.photo.upload")
 	public void upload() {
 	}
@@ -110,6 +114,8 @@ public class PhotoModule extends BaseModule {
 		photo.setUrl(
 				photo.getUrl().substring(0, photo.getUrl().lastIndexOf(File.separator)) 
 				+ "/" + photo.getId() + "_preview400w" + Files.getSuffix(photo.getUrl()));
+//		photo.setWidth(thumbnail.getWidth());
+//		photo.setHeight(thumbnail.getHeight());
 
 		return Lang.list(photo);
 	}
