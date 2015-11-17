@@ -6,11 +6,13 @@
 <t:page pageTitle="所有照片" pageDescription="Photos">
 	<jsp:attribute name="pageStyles">
 	<style type="text/css">
-	.photos-view
+	.waterfall {
+		margin-top:20px;
+	}
 	</style>
 	</jsp:attribute>
 	<jsp:attribute name="pageScript">
-	<script src="<c:url value="/js/tmpl.min.js" />"></script>
+	<script src="<c:url value="/js/mustache.js" />"></script>
 	<script src="<c:url value="/js/waterfall.min.js" />"></script>
 	<script type="text/javascript">
 		$(function() {
@@ -24,15 +26,12 @@
 			        return '<c:url value="/photo/popular" />?pageSize=20&pageNumber=' + page;
 			    },
 			    callbacks: {
-			        /*
-			        * 处理ajax返回数方法
-			        * @param {String} data
-			        */
 			       renderData: function (data) {
-			    	   if(data.pager.pageNumber === data.pager.pageCount){
+			    	   if(data.pager.pageNumber >= data.pager.pageCount){
 			    		   $('.waterfall').waterfall('pause');
 			    	   }
-			           return tmpl("tmpl-photo", data)
+			    	   var template = $('#tmpl-photo').html();
+					   return Mustache.render(template, data);
 			       }
 			    }
 			});
@@ -41,12 +40,14 @@
 	</jsp:attribute>
 	<jsp:body>
 	<div class="waterfall pure-g">
-		<script type="text/x-tmpl" id="tmpl-photo">
-			{% for (var i=0; i<o.list.length; i++) { %}
-			<div class="item">
-        		<img src="{%=contextPath + o.list[i].url%}" />
+		<script type="x-tmpl-mustache" id="tmpl-photo">
+			{{#list}}
+			<div class="item" id="p{{id}}">
+        		<a href="<c:url value="/photo/view" />?id={{id}}">
+					<img src="{{url}}?imageView2/0/w/400" />
+				</a>
     		</div>
-			{% } %}
+			{{/list}}
 		</script>
 	</div>
 	</jsp:body>

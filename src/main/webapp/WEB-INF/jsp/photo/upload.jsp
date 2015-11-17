@@ -151,17 +151,30 @@ items item {
 .photo-view {
 	display: none;
 }
+
 </style>
+	<link rel="stylesheet" href="<c:url value="/css/datepicker-base.css" />">
+	<link rel="stylesheet" href="<c:url value="/css/datepicker-clean.css" />">
 	</jsp:attribute>
 	<jsp:attribute name="pageScript">
 	<script src="<c:url value="/js/jquery.ui.widget.js" />"></script>
 	<script src="<c:url value="/js/jquery.iframe-transport.js" />"></script>
 	<script src="<c:url value="/js/jquery.fileupload.js" />"></script>
-	<script src="<c:url value="/js/jquery-serializeForm.min.js" />"></script>
 	<script src="<c:url value="/js/json2.js" />"></script>
-	<script src="<c:url value="/js/tmpl.min.js" />"></script>
+	<script src="<c:url value="/js/jquery-serializeForm.min.js" />"></script>
+	<script src="<c:url value="/js/mustache.js" />"></script>
+	<script src="<c:url value="/js/datepicker.js" />"></script>
+	
 	<script type="text/javascript">
 		$(function() {
+			var ver = getInternetExplorerVersion();
+
+		    if ( ver > -1 )
+		    {
+		        if ( ver < 10.0 ) {
+		        	$('#droptarget h2,#droptarget .por').css('visibility','hidden');
+		        }
+		    }
 			$(document).bind('drop dragover', function (e) {
 			    e.preventDefault();
 			});
@@ -172,10 +185,24 @@ items item {
 						dropZone : $('#droptarget'),
 						done : function(e, data) {
 							$('.photo-view').show('slow');
+							var template = $('#tmpl-photo').html();
 							$.each(data.result, function(index, photo) {
-								$('.photo-edit-list').html(
-										$('.photo-edit-list').html()
-												+ tmpl("tmpl-photo", photo));
+								var rendered = Mustache.render(template, photo);
+								$('.photo-edit-list').append(rendered);
+								$('input, textarea').placeholder();
+								$('.input-date').DatePicker({
+									mode: 'single',
+									position: 'right',
+								 	onBeforeShow: function(el){
+								 		if($('.input-date').val())
+											$('.input-date').DatePickerSetDate($('.input-date').val(), true);
+								 		},
+								 	onChange: function(date, el) {
+								 		$(el).val(
+								 			date.getFullYear() + '-' + (date.getMonth()+1)+ '-' + date.getDate()
+								 		);
+								  	}
+								});
 							});
 						},
 						progressall : function(e, data) {
@@ -208,6 +235,25 @@ items item {
 				});
 			});
 		});
+		/**
+		 * Returns the version of Internet Explorer or a -1
+		 * (indicating the use of another browser).
+		 */
+		function getInternetExplorerVersion()
+		{
+		    var rv = -1; // Return value assumes failure.
+
+		    if (navigator.appName == 'Microsoft Internet Explorer')
+		    {
+		        var ua = navigator.userAgent;
+		        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+		        if (re.exec(ua) != null)
+		            rv = parseFloat( RegExp.$1 );
+		    }
+
+		    return rv;
+		}
+
 	</script>
 	</jsp:attribute>
 	<jsp:body>
@@ -240,20 +286,23 @@ items item {
 			    </div>
 			    </div>
 			    <div class="pure-u-1 photo-view">
-			    <script type="text/x-tmpl" id="tmpl-photo">
-	<item class="photo-info" media_id="{%=o.id%}">
+			    <script type="x-tmpl-mustache" id="tmpl-photo">
+	<div class="item photo-info" media_id="{{id}}">
 		<div class="pure-g demo-image-container">
 			<div class="pure-u-1" style="text-align:center">
-				<img src="{%=contextPath + o.url%}" alt="Photo">
+				<img src="{{{url}}}?imageView2/0/h/400" alt="{{name}}">
 			</div>
 		</div>
 		<div class="upload-settings-wrapper">
 
-        <div class="pure-g upload-settings pure-form pure-form-stacked">
+        <div class="upload-settings pure-form pure-form-stacked">
+			<input id="id" name="id" type="hidden" value="{{id}}">
+			<input id="metaId" name="metaId" type="hidden" value="{{metaId}}">
         	<legend>详情</legend>
+			<div class="pure-g">
             <div class="pure-u-1 pure-u-md-1-3">
-                <label for="name">名称</label>
-                <input id="name" name="name" class="pure-u-23-24" type="text" value="{%=o.name%}">
+                <label for="meta[name]">名称</label>
+                <input id="meta[name]" name="meta[name]" class="pure-u-23-24" type="text" value="{{meta.name}}">
             </div>
 
             <div class="pure-u-1 pure-u-md-1-3">
@@ -263,55 +312,65 @@ items item {
 
             <div class="pure-u-1 pure-u-md-1-3">
                 <label for="contestId">参赛</label>
-                <select id="contestId" name="contestId" class="pure-input-1-2" disabled>
+                <select id="contestId" name="contestId" class="pure-u-23-24">
                     <option value="0">不参赛</option>
-                    <option value="1" selected>我爱我家--多彩气象</option>
+                    <option value="1" selected>[我爱我家--多彩气象]数码相机专区</option>
+					<option value="2">[我爱我家--多彩气象]手机专区</option>
                 </select>
             </div>
 
-			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="location">拍摄地点</label>
-                <input id="location" name="location" class="pure-u-23-24" type="text">
-            </div>
-
-			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="time">拍摄时间</label>
-                <input id="time" name="time" class="pure-u-23-24" type="text">
-            </div>
-
             <div class="pure-u-1 pure-u-md-1-3">
-                <label for="description">描述</label>
-				<textarea class="pure-input-2-3" id="description" name="description" placeholder=""></textarea>
+                <label for="group">如果图片是组图中的一副，输入组图名称</label>
+                <input id="group" name="group" class="pure-u-23-24" placeholder="" type="text">
             </div>
+
+			<input id="meta[id]" name="meta[id]" type="hidden" value="{{meta.id}}">
+
+			<div class="pure-u-1 pure-u-md-1-3">
+                <label for="meta[location]">拍摄地点</label>
+                <input id="meta[location]" name="meta[location]" class="pure-u-23-24" type="text" value="{{meta.location}}">
+            </div>
+
+			<div class="pure-u-1 pure-u-md-1-3">
+                <label for="meta[time]">拍摄时间</label>
+                <input id="meta[time]" name="meta[time]" class="input-date pure-u-23-24" type="text" value="{{meta.time}}">
+            </div>
+
+            <div class="pure-u-1">
+                <label for="meta[description]">描述</label>
+				<textarea class="pure-u-7-8" id="meta[description]" name="meta[description]" placeholder=""></textarea>
+            </div>
+			</div>
 			<legend>参数</legend>
+			<div class="pure-g">
 			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="camera">相机</label>
-                <input id="camera" name="camera" class="pure-u-23-24" type="text">
+                <label for="meta[camera]">相机</label>
+                <input id="meta[camera]" name="meta[camera]" class="pure-u-23-24" type="text" value="{{meta.camera}}">
             </div>
 
 			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="aperture">光圈</label>
-                <input id="aperture" name="aperture" class="pure-u-23-24" type="text">
+                <label for="meta[aperture]">光圈</label>
+                <input id="meta[aperture]" name="meta[aperture]" class="pure-u-23-24" type="text" value="{{meta.aperture}}">
             </div>
 
 			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="iso">ISO</label>
-                <input id="iso" name="iso" class="pure-u-23-24" type="text">
+                <label for="meta[iso]">ISO</label>
+                <input id="meta[iso]" name="meta[iso]" class="pure-u-23-24" type="text" value="{{meta.iso}}">
             </div>
 
 			<div class="pure-u-1 pure-u-md-1-3">
-                <label for="exposure">曝光</label>
-                <input id="exposure" name="exposure" class="pure-u-23-24" type="text">
+                <label for="meta[exposure]">曝光</label>
+                <input id="meta[exposure]" name="meta[exposure]" class="pure-u-23-24" type="text" value="{{meta.exposure}}">
             </div>
-
+			</div>
             
         </div>
 		</div>
-</item>
+</div>
 				</script>
-			    <items class="photo-edit-list">
+			    <div class="items photo-edit-list">
 					
-				</items>
+				</div>
 				<p style="text-align:center;">
 		                照片已上传，请保存以上配置.
 		        </p>

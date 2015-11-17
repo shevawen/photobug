@@ -12,7 +12,6 @@
 		<filter-name>ShiroFilter</filter-name>
 		<filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>ShiroFilter</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -28,6 +27,14 @@
 			<param-name>modules</param-name>
 			<param-value>com.github.photobug.module.MainModule</param-value>
 		</init-param>
+		<init-param>
+            <param-name>exclusions</param-name>
+            <param-value>/js/*,/css/*,/image/*</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ignore</param-name>
+            <param-value>^(.+[.])(jsp|js|css|jspx|html)$</param-value>
+        </init-param>
 	</filter>
 	<filter-mapping>
 		<filter-name>nutz</filter-name>
